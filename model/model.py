@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 
 # unlimited.. poWAAHHH :D
-# resource.setrlimit(resource.RLIMIT_CPU, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
-# import resource
+resource.setrlimit(resource.RLIMIT_CPU, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+import resource
 
 try:
     import nltk
@@ -45,9 +45,10 @@ def build_vocab(tokenised_docs, min_df=2):
 
 # https://www.geeksforgeeks.org/understanding-tf-idf-term-frequency-inverse-document-frequency/
 # https://melaniewalsh.github.io/Intro-Cultural-Analytics/05-Text-Analysis/03-TF-IDF-Scikit-Learn.html
-# This is really shitty, upgrade to more sophisticated model or use out of the box embedder with big context?
-def tfidf_transform(tokenised_docs, vocab):
-    """Compute TF-IDF matrix from tokenized documents"""
+import numpy as np
+
+def tfidf_transform(tokenised_docs, vocab, alpha=2.0, entropy_weighting=True):
+    """Compute TF-IDF matrix with optional scaling and information theoretic reweighting"""
     word2idx = {word: i for i, word in enumerate(vocab)}
     n_docs = len(tokenised_docs)
     n_vocab = len(vocab)
@@ -58,13 +59,20 @@ def tfidf_transform(tokenised_docs, vocab):
         for word in doc:
             if word in word2idx:
                 tf[i, word2idx[word]] += 1
-        # L1 Normalization
         if len(doc) > 0:
-            tf[i] /= len(doc)
+            tf[i] /= np.sum(tf[i])  # L1 Normalization
     
-    # Inverse Document Frequency (IDF)
+    # Document Frequency (DF)
     df = np.sum(tf > 0, axis=0)
-    idf = np.log(n_docs / (df + 1)) + 1  # Smoothed IDF
+    
+    # IDF scaling
+    idf = np.log((n_docs + 1) / (df + 1)) ** alpha + 1  # Exponentiate IDF for stronger weighting
+    
+    # Optional: Entropy-based reweighting to ignore low information words
+    if entropy_weighting:
+        p_w = df / np.sum(df)  # Probability of word occurrence across documents
+        entropy = -p_w * np.log2(p_w + 1e-9)  # Entropy of word distribution
+        idf *= (1 + entropy)  # Boost less uniformly distributed words
     
     return tf * idf
 
