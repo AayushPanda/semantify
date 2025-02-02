@@ -1,2 +1,3 @@
-model/data/docs
-model/outputs
+model/data/docs/
+model/outputs/
+.idea/
