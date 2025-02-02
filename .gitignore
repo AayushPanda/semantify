@@ -1,3 +1,4 @@
-model/data/docs/
-model/outputs/
+model/data/docs
+model/outputs
+.venv/
 .idea/
