@@ -3,6 +3,10 @@ import re
 import numpy as np
 import pandas as pd
 
+# unlimited.. poWAAHHH :D
+# resource.setrlimit(resource.RLIMIT_CPU, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+# import resource
+
 try:
     import nltk
     from nltk.corpus import stopwords
@@ -31,10 +35,10 @@ def preprocess(text):
 
     return [word for word in tokens if word not in stopwords]
 
-def build_vocab(tokenized_docs, min_df=2):
+def build_vocab(tokenised_docs, min_df=2):
     """Build vocabulary with minimum document frequency filtering"""
     word_counts = {}
-    for doc in tokenized_docs:
+    for doc in tokenised_docs:
         for word in set(doc):
             word_counts[word] = word_counts.get(word, 0) + 1
     return [word for word, count in word_counts.items() if count >= min_df]
@@ -42,15 +46,15 @@ def build_vocab(tokenized_docs, min_df=2):
 # https://www.geeksforgeeks.org/understanding-tf-idf-term-frequency-inverse-document-frequency/
 # https://melaniewalsh.github.io/Intro-Cultural-Analytics/05-Text-Analysis/03-TF-IDF-Scikit-Learn.html
 # This is really shitty, upgrade to more sophisticated model or use out of the box embedder with big context?
-def tfidf_transform(tokenized_docs, vocab):
+def tfidf_transform(tokenised_docs, vocab):
     """Compute TF-IDF matrix from tokenized documents"""
     word2idx = {word: i for i, word in enumerate(vocab)}
-    n_docs = len(tokenized_docs)
+    n_docs = len(tokenised_docs)
     n_vocab = len(vocab)
     
     # Term Frequency (TF)
     tf = np.zeros((n_docs, n_vocab))
-    for i, doc in enumerate(tokenized_docs):
+    for i, doc in enumerate(tokenised_docs):
         for word in doc:
             if word in word2idx:
                 tf[i, word2idx[word]] += 1
