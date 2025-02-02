@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
 
 def compute_pairwise_distances(embeddings):
     """Compute pairwise Euclidean distances using vectorized operations"""
@@ -43,7 +44,7 @@ def classical_mds(distances, n_components=2):
     # Project to smaller dimension
     return eigenvectors * np.sqrt(eigenvalues)
 
-def visualize_embeddings(embeddings_csv, output_file='embedding_plot.png'):
+def visualise_embeddings(embeddings_csv, output_file='embedding_plot.png'):
     """Main visualization function"""
     # Load data
     df = pd.read_csv(embeddings_csv)
@@ -77,11 +78,47 @@ def visualize_embeddings(embeddings_csv, output_file='embedding_plot.png'):
     plt.show()
     plt.close()
 
+def visualise_embeddings_3d(embeddings_csv, output_file='embedding_plot.png'):
+    """Main visualization function"""
+    # Load data
+    df = pd.read_csv(embeddings_csv)
+    filenames = df['filename']
+    embeddings = df.drop('filename', axis=1).values
+
+    # Compute distance matrix
+    distances = compute_pairwise_distances(embeddings)
+
+    # Compute MDS coordinates
+    coords_3d = classical_mds(distances, n_components=3)
+
+    # Create plot
+    fig = plt.figure()
+    ax = plt.axes(projection ='3d')
+    ax.scatter(coords_3d[:, 0], coords_3d[:, 1], coords_3d[:, 2], alpha=0.7, edgecolor='w', s=100)
+
+    # Add filename labels
+    for i, name in enumerate(filenames):
+        ax.text(coords_3d[i, 0], coords_3d[i, 1], coords_3d[i, 2], name)
+
+    ax.set_title('Document Embeddings Visualization (MDS)', pad=20)
+    ax.set_xlabel('MDS Dimension 1')
+    ax.set_ylabel('MDS Dimension 2')
+    ax.set_zlabel('MDS Dimension 3')
+    ax.grid(alpha=0.2)
+    # ax.tight_layout()
+    plt.savefig(output_file, dpi=150, bbox_inches='tight')
+    plt.show()
+    plt.close()
+
+
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Visualize document embeddings in 2D')
+    parser = argparse.ArgumentParser(description='Visualise document embeddings in 2D')
     parser.add_argument('embeddings_csv', help='Input CSV file with embeddings')
     parser.add_argument('-o', '--output', default='embedding_plot.png', help='Output image filename')
+    parser.add_argument('--d3', action='store_true', help='Visualise in 3D (buggy)')
     args = parser.parse_args()
-    
-    visualize_embeddings(args.embeddings_csv, args.output)
+    if args.d3:
+        visualise_embeddings_3d(args.embeddings_csv, args.output)
+    else:
+        visualise_embeddings(args.embeddings_csv, args.output)
