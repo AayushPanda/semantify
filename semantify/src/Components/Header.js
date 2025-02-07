@@ -1,9 +1,9 @@
 export default function Header() {
     return (
-        <div className="Header">
-            <div className="Title">
+        <header className="Header">
+            <h1 className="Title">
                 semantify.
-            </div>
-        </div>
+            </h1>
+        </header>
     )
 }

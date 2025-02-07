@@ -1,6 +1,5 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import './test.json'
 /*
 // Custom node styles
 const nodeStyle = {
@@ -154,13 +153,10 @@ export default function Graph() {
   }
 
   return (
-
-    
-    
-    <div style={{ width: '100%', height: '100%' }}>
+    <div className="graph-container">
       <ForceGraph2D
-        width={2030} // CHANGE THESE AFTTER TO BE MORE DYNAMIC
-        height={1000}
+        width={window.innerWidth * 0.65}
+        height={window.innerHeight * 0.7}
         graphData={data}
         nodeAutoColorBy="group"
         backgroundColor="#ffffff"
@@ -169,7 +165,7 @@ export default function Graph() {
           const fontSize = 12/globalScale;
           ctx.font = `${fontSize}px Sans-Serif`;
           const textWidth = ctx.measureText(label).width;
-          const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+          const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
 
           ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
           ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
@@ -179,7 +175,7 @@ export default function Graph() {
           ctx.fillStyle = node.color;
           ctx.fillText(label, node.x, node.y);
 
-          node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+          node.__bckgDimensions = bckgDimensions;
         }}
         nodePointerAreaPaint={(node, color, ctx) => {
           ctx.fillStyle = color;
@@ -187,33 +183,6 @@ export default function Graph() {
           bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
         }}
       />
-
-      {/*
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-        style={{ background: '#E1E1E1', borderRadius: '15px' }}
-        nodesDraggable={true}
-        nodesConnectable={false}
-        elementsSelectable={true}
-      >
-        <Background color="#D0D0D0" gap={20} size={1} />
-        <Controls 
-          style={{
-            button: {
-              backgroundColor: 'white',
-              color: '#1D70A2',
-              borderRadius: '4px',
-            },
-          }}
-        />
-      </ReactFlow>
-      */}
     </div>
-    
   );
 }
