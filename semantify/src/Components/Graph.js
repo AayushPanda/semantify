@@ -155,8 +155,8 @@ export default function Graph() {
   return (
     <div className="graph-container">
       <ForceGraph2D
-        width={window.innerWidth * 0.65}
-        height={window.innerHeight * 0.7}
+        width={window.innerWidth}
+        height={window.innerHeight}
         graphData={data}
         nodeAutoColorBy="group"
         backgroundColor="#ffffff"
