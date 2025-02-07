@@ -1,10 +1,11 @@
-
 export default function UploadButton() {
-    return(
-        <button onClick={upload}>Upload</button>
+    return (
+        <button className="upload-button" onClick={upload}>
+            Upload
+        </button>
     )
 }
 
 function upload() {
-    alert('PRESSED UPLOAD');
+    alert('PRESSED UPLOAD(change feature later)');
 }

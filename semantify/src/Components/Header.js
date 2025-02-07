@@ -1,5 +1,5 @@
-export default function DownloadButton() {
-    return(
+export default function Header() {
+    return (
         <div className="Header">
             <div className="Title">
                 semantify.

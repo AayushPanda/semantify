@@ -1,10 +1,11 @@
-
 export default function DownloadButton() {
-    return(
-        <button onClick={download}>Download</button>
+    return (
+        <button className="download-button" onClick={download}>
+            Download
+        </button>
     )
 }
 
 function download() {
-    alert('PRESSED DOWNLOAD');
+    alert('Pressed Download, (add in features later)');
 }
