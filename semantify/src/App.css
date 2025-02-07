@@ -19,12 +19,13 @@
   text-align: center;
   border-bottom: 1px solid #E8E8E8;
   background-color: #F5F5F5;
+  filter: drop-shadow(0px 0px 10px #a5a5a5);
 }
 
-.Header .Title {
+.Title {
   color: #1D70A2;
-  font-weight: 500;
-  font-size: 32px;
+  font-weight: bold;
+  font-size: 3vh;
   background-color: #F5F5F5;
 }
 
@@ -127,10 +128,12 @@ button:hover {
 }
 
 .upload-button {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   background-color: #1D70A2;
 }
 
 .download-button {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   background-color: #77B5D9;
 }
 
@@ -204,7 +207,6 @@ button:hover {
   border: none;
   border-radius: 20px;
   background-color: #1D70A2;
-  color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -212,12 +214,11 @@ button:hover {
   padding: 8px;
 }
 
-.send-button svg {
-  width: 20px;
-  height: 20px;
-}
-
 .send-button:hover {
   background-color: #165c87;
+}
+
+.send-button-arrow{
+  background: none;
 }
 

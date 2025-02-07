@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUp } from '@fortawesome/free-solid-svg-icons'
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -29,11 +31,9 @@ export default function Chat() {
           placeholder="Type your question here"
           className="chat-input"
         />
+
         <button type="submit" className="send-button">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 20V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M5 12L12 4L19 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+            <FontAwesomeIcon className="send-button-arrow" icon={faArrowUp}/>
         </button>
       </form>
     </div>
