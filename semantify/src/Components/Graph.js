@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import data from '../data.json';
+
+// TODO: Make it possible to pan, when the user drags a node try to make it return to its original position slowly...
+
 /*
 // Custom node styles
 const nodeStyle = {
@@ -60,101 +64,32 @@ export default function Graph() {
     [setEdges]
   );
   */
-  const data = {
-    "nodes": [
-      {"id": "Myriel", "group": 1},
-      {"id": "Napoleon", "group": 100},
-      {"id": "Mlle.Baptistine", "group": 1},
-      {"id": "Mme.Magloire", "group": 1},
-      {"id": "CountessdeLo", "group": 1},
-      {"id": "Geborand", "group": 1},
-      {"id": "Champtercier", "group": 1},
-      {"id": "Cravatte", "group": 1},
-      {"id": "Count", "group": 1},
-      {"id": "OldMan", "group": 1},
-      {"id": "Labarre", "group": 2},
-      {"id": "Valjean", "group": 2},
-      {"id": "Marguerite", "group": 3},
-      {"id": "Mme.deR", "group": 2},
-      {"id": "Isabeau", "group": 2},
-      {"id": "Gervais", "group": 2},
-      {"id": "Tholomyes", "group": 3},
-      {"id": "Listolier", "group": 3},
-      {"id": "Fameuil", "group": 3},
-      {"id": "Blacheville", "group": 3},
-      {"id": "Favourite", "group": 3},
-      {"id": "Dahlia", "group": 3},
-      {"id": "Zephine", "group": 3},
-      {"id": "Fantine", "group": 3},
-      {"id": "Mme.Thenardier", "group": 4},
-      {"id": "Thenardier", "group": 4},
-      {"id": "Cosette", "group": 5},
-      {"id": "Javert", "group": 4},
-      {"id": "Fauchelevent", "group": 0},
-      {"id": "Bamatabois", "group": 2},
-      {"id": "Perpetue", "group": 3},
-      {"id": "Simplice", "group": 2},
-      {"id": "Scaufflaire", "group": 2},
-      {"id": "Woman1", "group": 2},
-      {"id": "Judge", "group": 2},
-      {"id": "Champmathieu", "group": 2},
-      {"id": "Brevet", "group": 2},
-      {"id": "Chenildieu", "group": 2},
-      {"id": "Cochepaille", "group": 2},
-      {"id": "Pontmercy", "group": 4},
-      {"id": "Boulatruelle", "group": 6},
-      {"id": "Eponine", "group": 4},
-      {"id": "Anzelma", "group": 4},
-      {"id": "Woman2", "group": 5},
-      {"id": "MotherInnocent", "group": 0},
-      {"id": "Gribier", "group": 0},
-      {"id": "Jondrette", "group": 7},
-      {"id": "Mme.Burgon", "group": 7},
-      {"id": "Gavroche", "group": 8},
-      {"id": "Gillenormand", "group": 5},
-      {"id": "Magnon", "group": 5},
-      {"id": "Mlle.Gillenormand", "group": 5},
-      {"id": "Mme.Pontmercy", "group": 5},
-      {"id": "Mlle.Vaubois", "group": 5},
-      {"id": "Lt.Gillenormand", "group": 5},
-      {"id": "Marius", "group": 8},
-      {"id": "BaronessT", "group": 5},
-      {"id": "Mabeuf", "group": 8},
-      {"id": "Enjolras", "group": 8},
-      {"id": "Combeferre", "group": 8},
-      {"id": "Prouvaire", "group": 8},
-      {"id": "Feuilly", "group": 8},
-      {"id": "Courfeyrac", "group": 8},
-      {"id": "Bahorel", "group": 8},
-      {"id": "Bossuet", "group": 8},
-      {"id": "Joly", "group": 8},
-      {"id": "Grantaire", "group": 8},
-      {"id": "MotherPlutarch", "group": 9},
-      {"id": "Gueulemer", "group": 4},
-      {"id": "Babet", "group": 4},
-      {"id": "Claquesous", "group": 4},
-      {"id": "Montparnasse", "group": 4},
-      {"id": "Toussaint", "group": 5},
-      {"id": "Child1", "group": 10},
-      {"id": "Child2", "group": 10},
-      {"id": "Brujon", "group": 4},
-      {"id": "Mme.Hucheloup", "group": 8}
-    ],
-    "links": [
-      {"source": "Napoleon", "target": "Myriel", "value": 3},
-      {"source": "Napoleon", "target": "Myriel", "value": 3},
-      {"source": "Napoleon", "target": "Myriel", "value": 3},
-      {"source": "Napoleon", "target": "Myriel", "value": 3},
+  const graphRef = useRef();
 
-      {"source": "Napoleon", "target": "Mme.Magloire", "value": 3},
-      {"source": "Mme.Magloire", "target": "Mme.Hucheloup", "value": 3},
-      {"source": "Mme.Hucheloup", "target": "CountessdeLo", "value": 1000}
-    ]
-  }
 
+  useEffect(() => {
+    if (graphRef.current && data.nodes.length > 0) {
+      // Compute the centroid (average x and y position)
+      const avgX =
+        data.nodes.reduce((sum, node) => sum + node.x, 0) /
+        data.nodes.length;
+      const avgY =
+        data.nodes.reduce((sum, node) => sum + node.y, 0) /
+        data.nodes.length;
+
+      // Center graph at the calculated position
+      setTimeout(() => {
+        graphRef.current.centerAt(avgX, avgY, 1000);
+        graphRef.current.zoom(3, 1000);
+      }, 500);
+
+    }
+  }, []);
+  
   return (
     <div className="graph-container">
       <ForceGraph2D
+        ref={graphRef}
         width={window.innerWidth}
         height={window.innerHeight}
         graphData={data}
@@ -182,6 +117,9 @@ export default function Graph() {
           const bckgDimensions = node.__bckgDimensions;
           bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
         }}
+        enableZoom={true}
+        enablePan={true}
+
       />
     </div>
   );
