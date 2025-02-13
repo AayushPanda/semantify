@@ -2,7 +2,7 @@ import os
 import re
 import numpy as np
 import pandas as pd
-from sklearn.manifold import TSNE
+from sklearn.manifold import TSNE   
 
 # unlimited.. poWAAHHH :D
 import resource
@@ -68,7 +68,7 @@ def tfidf_transform(tokenised_docs, vocab, alpha=2.0, entropy_weighting=True):
     df = np.sum(tf > 0, axis=0)
     
     # IDF scaling
-    idf = np.log((f + 1) / (df + 1)) ** alpha + 1  # Exponentiate IDF for stronger weighting
+    idf = np.log((tf + 1) / (df + 1)) ** alpha + 1  # Exponentiate IDF for stronger weighting
     
     # Optional: Entropy-based reweighting to ignore low information words
     if entropy_weighting:
@@ -108,23 +108,28 @@ def main(input_dir, output_file='embeddings.csv', embed_dim=50):
     print(f"Vocabulary size: {len(vocab)}")
     
     # Compute TF-IDF matrix
+    print("Computing TF-IDF matrix...")
     tfidf_matrix = tfidf_transform(df['tokens'], vocab)
     
     # Compute PCA embeddings
+    print(f"Computing PCA embeddings (dim={embed_dim})...")
     embeddings = pca_embedding(tfidf_matrix, embed_dim)
     
     # Create output DataFrame
+    print("Creating output DataFrame...")
     embedding_cols = [f'emb_{i}' for i in range(embed_dim)]
     result_df = pd.DataFrame(embeddings, columns=embedding_cols)
     result_df.insert(0, 'filename', df['filename'])
 
     # Create estimator
+    print("Creating TSNE estimator...")
     tsne = TSNE(n_components=2, perplexity=30, n_iter=300)
     tsne_coords = tsne.fit_transform(embeddings)
     result_df['reduced_x'] = tsne_coords[:, 0]
     result_df['reduced_y'] = tsne_coords[:, 1]
     
     # Save to CSV
+    print(f"Saving embeddings to {output_file}...")
     result_df.to_csv(output_file, index=False)
     print(f"Embeddings saved to {output_file}")
 
