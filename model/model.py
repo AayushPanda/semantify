@@ -2,10 +2,12 @@ import os
 import re
 import numpy as np
 import pandas as pd
+from sklearn.manifold import TSNE
 
 # unlimited.. poWAAHHH :D
-resource.setrlimit(resource.RLIMIT_CPU, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
 import resource
+resource.setrlimit(resource.RLIMIT_CPU, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+
 
 try:
     import nltk
@@ -52,7 +54,7 @@ def tfidf_transform(tokenised_docs, vocab, alpha=2.0, entropy_weighting=True):
     word2idx = {word: i for i, word in enumerate(vocab)}
     n_docs = len(tokenised_docs)
     n_vocab = len(vocab)
-    
+        
     # Term Frequency (TF)
     tf = np.zeros((n_docs, n_vocab))
     for i, doc in enumerate(tokenised_docs):
@@ -66,7 +68,7 @@ def tfidf_transform(tokenised_docs, vocab, alpha=2.0, entropy_weighting=True):
     df = np.sum(tf > 0, axis=0)
     
     # IDF scaling
-    idf = np.log((n_docs + 1) / (df + 1)) ** alpha + 1  # Exponentiate IDF for stronger weighting
+    idf = np.log((f + 1) / (df + 1)) ** alpha + 1  # Exponentiate IDF for stronger weighting
     
     # Optional: Entropy-based reweighting to ignore low information words
     if entropy_weighting:
@@ -96,7 +98,7 @@ def pca_embedding(X, n_components=100):
     # Project data
     return np.dot(X_centered, components)
 
-def main(input_dir, output_file='embeddings.csv', embed_dim=100):
+def main(input_dir, output_file='embeddings.csv', embed_dim=50):
     # Read and preprocess documents
     df = read_text_files(input_dir)
     df['tokens'] = df['text'].apply(preprocess)
@@ -115,6 +117,12 @@ def main(input_dir, output_file='embeddings.csv', embed_dim=100):
     embedding_cols = [f'emb_{i}' for i in range(embed_dim)]
     result_df = pd.DataFrame(embeddings, columns=embedding_cols)
     result_df.insert(0, 'filename', df['filename'])
+
+    # Create estimator
+    tsne = TSNE(n_components=2, perplexity=30, n_iter=300)
+    tsne_coords = tsne.fit_transform(embeddings)
+    result_df['reduced_x'] = tsne_coords[:, 0]
+    result_df['reduced_y'] = tsne_coords[:, 1]
     
     # Save to CSV
     result_df.to_csv(output_file, index=False)
