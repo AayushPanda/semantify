@@ -15,8 +15,11 @@ def filesEmbedder(path, n_important):
         raw_embeds = [res["embedding"][:n_important] for res in sorted(segmenter.process_document(path + file), key=lambda x: x["num_sentences"])]
         for emb in raw_embeds:
             embeddings.loc[len(embeddings)] = [file, emb]
-
+        c += 1
     return embeddings
+
+pic
+
 
 out = filesEmbedder("data/docs/", 3)
 clustering.visualize_clusters(out["embedding"], out["file"])
