@@ -1,43 +1,22 @@
-from sentence_transformers import SentenceTransformer
-from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
-import nltk
-nltk.download('punkt')
+import segmenter
+import clustering
+import pandas as pd
+import os
+import logging
 
-# Load the text file and preprocess it
-with open('data/docs/Australia.txt', 'r') as file:
-    text = file.read()
+def filesEmbedder(path, n_important):
+    """Reads all files from a directory and creates embeddings for them absed on the n most important semantic segments"""
+    embeddings = pd.DataFrame(columns=["file", "embedding"])
+    paths = os.listdir(path)
+    lpaths = len(paths)
+    c = 0
+    for file in paths:
+        logging.info(f"Progress: {c}/{lpaths}")
+        raw_embeds = [res["embedding"][:n_important] for res in sorted(segmenter.process_document(path + file), key=lambda x: x["num_sentences"])]
+        for emb in raw_embeds:
+            embeddings.loc[len(embeddings)] = [file, emb]
 
-# Split text into sentences (or paragraphs)
-sentences = nltk.sent_tokenize(text)
+    return embeddings
 
-# Load pre-trained sentence transformer model
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-
-# Generate embeddings for each sentence
-embeddings = model.encode(sentences)
-
-# Perform clustering using KMeans
-num_topics = 5  # Specify number of topics
-kmeans = KMeans(n_clusters=num_topics)
-kmeans.fit(embeddings)
-
-# Get the cluster labels
-labels = kmeans.labels_
-
-# Visualize using PCA
-pca = PCA(n_components=2)
-pca_result = pca.fit_transform(embeddings)
-
-# Plot the clusters
-plt.scatter(pca_result[:, 0], pca_result[:, 1], c=labels)
-plt.title('Sentence Clustering (Topic Modeling)')
-plt.show()
-
-# Print out sentences per topic
-for topic in range(num_topics):
-    print(f"Topic {topic}:")
-    for i, label in enumerate(labels):
-        if label == topic:
-            print(f" - {sentences[i]}")
+out = filesEmbedder("data/docs/", 3)
+clustering.visualize_clusters(out["embedding"], out["file"])

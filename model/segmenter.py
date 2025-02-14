@@ -11,6 +11,8 @@ from matplotlib import pyplot as plt
 from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
 
+from clustering import cluster, visualize_clusters
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -18,38 +20,13 @@ def embed_sentences(sentences, model):
     """Generates embeddings for sentences using Sentence Transformer."""
     return model.encode(sentences)
 
-def cluster_sentences(embeddings):
-    """Applies UMAP for dimensionality reduction and Agglomerative Clustering."""
-    clusterable_embedding = umap.UMAP(n_neighbors=30, min_dist=0.1, n_components=30).fit_transform(embeddings)
-
-    clustering = AgglomerativeClustering(n_clusters=None, distance_threshold=2.5)
-    labels = clustering.fit_predict(clusterable_embedding)
-
-    return labels, clusterable_embedding
-
-def visualize_clusters(clusterable_embedding, labels, method="UMAP"):
-    """Visualizes clusters using given method of dimensionality reduction to 2d."""
-    logging.info("Running visualization...")
-    if method=="TSNE":
-        tsne = TSNE(n_components=2, perplexity=min(30, len(clusterable_embedding) - 1), n_iter=300)
-        tsne_coords = tsne.fit_transform(clusterable_embedding)
-
-        plt.scatter(tsne_coords[:, 0], tsne_coords[:, 1], c=labels, cmap='rainbow', alpha=0.6)
-        plt.title("Sentence Clusters")
-        plt.show()
-    else:
-        umap_2d = umap.UMAP(n_components=2, n_neighbors=30, min_dist=0.2).fit_transform(clusterable_embedding)
-        plt.scatter(umap_2d[:, 0], umap_2d[:, 1], c=labels, cmap='rainbow', alpha=0.6, s=2)
-        plt.title("Sentence Clusters (UMAP Projection)")
-        plt.show()
-
 
 def extract_keywords(segment_text, kw_model, top_n=3):
     """Extracts top keywords from a text segment using KeyBERT."""
     keywords = kw_model.extract_keywords(segment_text, keyphrase_ngram_range=(1, 2), stop_words='english', top_n=top_n)
     return [kw[0] for kw in keywords]
 
-def process_document(file_path):
+def process_document(file_path, vis=False):
     """Processes a document: reads, embeds, clusters, extracts topics, and visualizes clusters."""
     logging.info(f"Processing document: {file_path}")
 
@@ -74,10 +51,10 @@ def process_document(file_path):
     embeddings = embed_sentences(sentences, model)
 
     # Perform clustering
-    cluster_labels, clusterable_embedding = cluster_sentences(embeddings)
+    cluster_labels, clusterable_embedding = cluster(embeddings)
 
     # Visualize clusters
-    visualize_clusters(clusterable_embedding, cluster_labels)
+    if vis: visualize_clusters(clusterable_embedding, cluster_labels)
 
     # Group sentences by cluster labels
     segments = {}
@@ -113,7 +90,7 @@ def main():
         logging.error(f"File not found: {args.file_path}")
         return
 
-    results = process_document(args.file_path)
+    results = process_document(args.file_path, vis=True)
 
     if args.verbose:
         for result in results:
