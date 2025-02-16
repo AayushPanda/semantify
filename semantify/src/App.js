@@ -1,23 +1,26 @@
-import logo from './logo.svg';
 import './App.css';
+import UploadButton from './Components/UploadButton';
+import DownloadButton from './Components/DownloadButton';
+import Header from './Components/Header';
+import Graph from './Components/Graph';
+import Chat from './Components/Chat';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header />
+      <div className="main-content">
+        <div className="left-section">
+          <Graph />
+          <div className="button-container">
+            <UploadButton />
+            <DownloadButton />
+          </div>
+        </div>
+        <div className="right-section">
+          <Chat />
+        </div>
+      </div>
     </div>
   );
 }
