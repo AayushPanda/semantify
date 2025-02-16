@@ -8,11 +8,12 @@ from keybert import KeyBERT
 import clustering
 from sklearn.metrics import silhouette_score
 import argparse
+import shutil
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-def find_optimal_clusters(embeddings, min_clusters=2, max_clusters=10):
+def find_optimal_clusters(embeddings, min_clusters=1, max_clusters=10):
     """
     Uses the Silhouette score to determine the optimal number of clusters.
     Ensures that n_clusters is at least 2 to avoid errors.
@@ -20,11 +21,10 @@ def find_optimal_clusters(embeddings, min_clusters=2, max_clusters=10):
     best_n = min_clusters
     best_score = -1
 
-    # Ensure we don't request more clusters than samples
     max_clusters = min(max_clusters, len(embeddings) - 1)
 
-    if max_clusters < 2:  # If we can't create at least 2 clusters, return 2
-        return 2
+    if max_clusters < 2:
+        return 1
 
     for n in range(min_clusters, max_clusters + 1):
         labels, _ = clustering.ncluster(embeddings, n=n)
@@ -76,7 +76,7 @@ def hierarchical_cluster_and_label(embeddings_df, min_cluster_size=5, level=1, m
         sub_df = embeddings_df[labels == cluster].copy()
         clustered_dfs.append(hierarchical_cluster_and_label(sub_df, min_cluster_size, level + 1, max_levels))
 
-    return pd.concat(clustered_dfs, ignore_index=True).drop(columns=["cluster"])
+    return pd.concat(clustered_dfs, ignore_index=True)
 
 def filesEmbedder(path, n_important=3):
     """
@@ -107,17 +107,16 @@ def generate_folder_structure(embeddings_df, output_dir):
     """
     Generates a folder structure based on hierarchical cluster labels.
     """
+
     for _, row in embeddings_df.iterrows():
-        cluster_path = os.path.join(output_dir, row["cluster-path"])
-        os.makedirs(cluster_path, exist_ok=True)
         file_name = os.path.basename(row["file"])
         try:
-            os.symlink(row["file"], os.path.join(cluster_path, file_name))
+            shutil.copy(row["file"], os.path.join(output_dir, row["cluster-path"], file_name))
         except FileExistsError:
-            logging.warning(f"File {file_name} already exists in {cluster_path}")
+            logging.warning(f"File {file_name} already exists in {row["cluster-path"]}")
 
 def main():
-    parser = argparse.ArgumentParser(description='Embedding Mass-Meaning Aggregator')
+    parser = argparse.ArgumentParser(description='EMbedding Meaning Aggregator')
     parser.add_argument('input_dir', type=str, help='Path with text files to be clustered')
     parser.add_argument('output_dir', type=str, help='Path to store clustered files')
     parser.add_argument("-embed_out_dir" , type=str, help="Path to store embeddings")
@@ -128,7 +127,7 @@ def main():
     embeddings_df = filesEmbedder(input_dir)
 
     logging.info("Clustering embeddings hierarchically...")
-    embeddings_df = hierarchical_cluster_and_label(embeddings_df)
+    embeddings_df = hierarchical_cluster_and_label(embeddings_df).drop(columns=["cluster"])
 
     if embeddings_df is not None:
         logging.info("Generating folder structure...")
@@ -141,8 +140,10 @@ def main():
             #reduce embeddings to 2D for visualization
             embeddings = np.vstack(embeddings_df["embedding"].to_list())
             clusterable_embeddings = clustering.reduce(embeddings, 2)
-            embeddings_df["embedding"] = clusterable_embeddings.tolist()
-
+            embeddings_df["visembedding"] = clusterable_embeddings.tolist()
+            
+            embeddings_df.to_pickle(os.path.join(args.embed_out_dir, "embeddings.pkl"))
+            embeddings_df.drop(columns=["embedding"], inplace = True)
             embeddings_df.to_json(os.path.join(args.embed_out_dir, "embeddings.json"), orient="records")
             embeddings_df.to_csv(os.path.join(args.embed_out_dir, "embeddings.csv"), index=False)
 
