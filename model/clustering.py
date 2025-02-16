@@ -14,12 +14,26 @@ def reduce(embeddings, target_dims, method="UMAP"):
         umapped = umap.UMAP(n_components=target_dims, n_neighbors=30, min_dist=0.2).fit_transform(embeddings)
         return umapped
 
-def cluster(embeddings):
+def cluster(embeddings, thres=2.5):
     """Applies UMAP for dimensionality reduction and Agglomerative Clustering."""
     if len(embeddings) > 30:
         clusterable_embedding = reduce(embeddings, 30)
+    else:
+        clusterable_embedding = embeddings
 
-    clustering = AgglomerativeClustering(n_clusters=None, distance_threshold=2.5)
+    clustering = AgglomerativeClustering(n_clusters=None, distance_threshold=thres)
+    labels = clustering.fit_predict(clusterable_embedding)
+
+    return labels, clusterable_embedding
+
+def ncluster(embeddings, n=10):
+    """Applies UMAP for dimensionality reduction and Agglomerative Clustering."""
+    if len(embeddings) > 30:
+        clusterable_embedding = reduce(embeddings, 30)
+    else:
+        clusterable_embedding = embeddings
+        
+    clustering = AgglomerativeClustering(n_clusters=n)
     labels = clustering.fit_predict(clusterable_embedding)
 
     return labels, clusterable_embedding

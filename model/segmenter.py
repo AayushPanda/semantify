@@ -75,7 +75,7 @@ def process_document(file_path, vis=False):
             "text": segment_text.strip(),
             "num_sentences": len(segment),
             "topics": topics,
-            "embedding": segment_embedding.tolist()
+            "embedding": segment_embedding
         })
 
     return results
