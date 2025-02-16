@@ -75,6 +75,7 @@ def process_document(file_path, vis=False):
             "text": segment_text.strip(),
             "num_sentences": len(segment),
             "topics": topics,
+            "text_sentences": segment_text,     # for selection during RAG -- might eat memory more than chengus
             "embedding": segment_embedding
         })
 
