@@ -16,7 +16,7 @@ def reduce(embeddings, target_dims, method="UMAP"):
 
 def cluster(embeddings, thres=2.5):
     """Applies UMAP for dimensionality reduction and Agglomerative Clustering."""
-    if len(embeddings) > 30:
+    if len(embeddings[0]) > 30 and len(embeddings) > 30:
         clusterable_embedding = reduce(embeddings, 30)
     else:
         clusterable_embedding = embeddings
@@ -28,7 +28,7 @@ def cluster(embeddings, thres=2.5):
 
 def ncluster(embeddings, n=10):
     """Applies UMAP for dimensionality reduction and Agglomerative Clustering."""
-    if len(embeddings) > 30:
+    if len(embeddings[0]) > 30 and len(embeddings) > 30:
         clusterable_embedding = reduce(embeddings, 30)
     else:
         clusterable_embedding = embeddings

@@ -4,12 +4,9 @@ import pandas as pd
 import numpy as np
 import segmenter
 import matplotlib.pyplot as plt
-from sklearn.cluster import AgglomerativeClustering
 from keybert import KeyBERT
 import clustering
 from sklearn.metrics import silhouette_score
-from sklearn.cluster import AgglomerativeClustering
-from keybert import KeyBERT
 import argparse
 
 # Configure logging
@@ -30,8 +27,7 @@ def find_optimal_clusters(embeddings, min_clusters=2, max_clusters=10):
         return 2
 
     for n in range(min_clusters, max_clusters + 1):
-        clustering = AgglomerativeClustering(n_clusters=n).fit(embeddings)
-        labels = clustering.labels_
+        labels, _ = clustering.ncluster(embeddings, n=n)
 
         if len(set(labels)) > 1:  # Silhouette score requires >1 cluster
             score = silhouette_score(embeddings, labels)
@@ -41,11 +37,7 @@ def find_optimal_clusters(embeddings, min_clusters=2, max_clusters=10):
 
     return best_n
 
-
-import shutil
-from collections import defaultdict
-
-def hierarchical_cluster_and_label(embeddings_df, min_cluster_size=2, level=1, max_levels=3):
+def hierarchical_cluster_and_label(embeddings_df, min_cluster_size=5, level=1, max_levels=100):
     """
     Recursively performs hierarchical clustering and assigns meaningful topic labels as folder names.
     """
@@ -57,23 +49,22 @@ def hierarchical_cluster_and_label(embeddings_df, min_cluster_size=2, level=1, m
     # Determine optimal number of clusters
     n_clusters = find_optimal_clusters(embeddings, min_clusters=2, max_clusters=min(10, len(embeddings_df)))
     
-    clustering_model = AgglomerativeClustering(n_clusters=n_clusters)
-    cluster_labels = clustering_model.fit_predict(embeddings)
-    embeddings_df["cluster"] = cluster_labels
+    labels, _ = clustering.ncluster(embeddings, n=n_clusters)
+    embeddings_df["cluster"] = labels
     
     # Generate topic labels using KeyBERT
     kw_model = KeyBERT()
     cluster_topic_labels = {}
 
-    for cluster in np.unique(cluster_labels):
-        sub_df = embeddings_df[cluster_labels == cluster]
+    for cluster in np.unique(labels):
+        sub_df = embeddings_df[labels == cluster]
         combined_text = " ".join(sub_df["topics"])
         
         keywords = kw_model.extract_keywords(combined_text, keyphrase_ngram_range=(1, 2), stop_words="english", top_n=1)
         topic_label = "_".join([kw[0] for kw in keywords])
         cluster_topic_labels[cluster] = topic_label
 
-    #append new cluster topic labels to appropriate rows
+    # Append new cluster topic labels to appropriate rows
     if not "cluster-path" in embeddings_df.columns:
         embeddings_df["cluster-path"] = ""
     
@@ -81,11 +72,11 @@ def hierarchical_cluster_and_label(embeddings_df, min_cluster_size=2, level=1, m
 
     # Recursively cluster within each subgroup
     clustered_dfs = []
-    for cluster in np.unique(cluster_labels):
-        sub_df = embeddings_df[cluster_labels == cluster].copy()
+    for cluster in np.unique(labels):
+        sub_df = embeddings_df[labels == cluster].copy()
         clustered_dfs.append(hierarchical_cluster_and_label(sub_df, min_cluster_size, level + 1, max_levels))
 
-    return pd.concat(clustered_dfs, ignore_index=True)
+    return pd.concat(clustered_dfs, ignore_index=True).drop(columns=["cluster"])
 
 def filesEmbedder(path, n_important=3):
     """
@@ -129,6 +120,7 @@ def main():
     parser = argparse.ArgumentParser(description='Embedding Mass-Meaning Aggregator')
     parser.add_argument('input_dir', type=str, help='Path with text files to be clustered')
     parser.add_argument('output_dir', type=str, help='Path to store clustered files')
+    parser.add_argument("-embed_out_dir" , type=str, help="Path to store embeddings")
     args = parser.parse_args()
     input_dir = args.input_dir
     output_dir = args.output_dir
@@ -142,6 +134,17 @@ def main():
         logging.info("Generating folder structure...")
         generate_folder_structure(embeddings_df, output_dir)
         logging.info(f"Folder structure generated at {output_dir}")
+
+        if args.embed_out_dir:
+            logging.info(f"Saving embeddings to {args.embed_out_dir}")
+            
+            #reduce embeddings to 2D for visualization
+            embeddings = np.vstack(embeddings_df["embedding"].to_list())
+            clusterable_embeddings = clustering.reduce(embeddings, 2)
+            embeddings_df["embedding"] = clusterable_embeddings.tolist()
+
+            embeddings_df.to_json(os.path.join(args.embed_out_dir, "embeddings.json"), orient="records")
+            embeddings_df.to_csv(os.path.join(args.embed_out_dir, "embeddings.csv"), index=False)
 
 if __name__ == "__main__":
     main()
