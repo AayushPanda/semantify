@@ -1,3 +1,11 @@
+numpy
+matplotlib
+pandas
+scikit-learn
+nltk
+umap-learn
+sentence_transformers
+keybert
 uvicorn
 fastapi
 python-multipart

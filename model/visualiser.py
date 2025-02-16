@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
+from sklearn.manifold import TSNE
+
 
 def compute_pairwise_distances(embeddings):
     """Compute pairwise Euclidean distances using vectorized operations"""
@@ -43,6 +45,9 @@ def classical_mds(distances, n_components=2):
 
     # Project to smaller dimension
     return eigenvectors * np.sqrt(eigenvalues)
+
+#def visualise_embeddings_tsne(embeddings_csv, output_file='embedding_plot.png'):
+
 
 def visualise_embeddings(embeddings_csv, output_file='embedding_plot.png'):
     """Main visualization function"""
