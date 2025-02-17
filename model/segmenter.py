@@ -38,6 +38,7 @@ def process_document(file_path, vis=False):
         text = f.read()
     # Download NLTK tokenizer if necessary
     nltk.download('punkt', quiet=True)
+    nltk.download('punkt_tab', quiet=True)
 
     # Segment text into sentences
     sentences = nltk.sent_tokenize(text)

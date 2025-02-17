@@ -98,7 +98,7 @@ def filesEmbedder(path, n_important=3):
 
         # Extract embeddings
         for seg in selected_segments:
-            embeddings.loc[len(embeddings)] = [file, "_".join(seg["topics"], seg["text"], seg["embedding"])]
+            embeddings.loc[len(embeddings)] = [file, "_".join(seg["topics"]), seg["text"], seg["embedding"]]
 
     return embeddings
 
@@ -109,10 +109,17 @@ def generate_folder_structure(embeddings_df, output_dir):
 
     for _, row in embeddings_df.iterrows():
         file_name = os.path.basename(row["file"])
+        destination_dir = os.path.join(output_dir, row["cluster-path"])
+
+        # Ensure the destination directory exists
+        os.makedirs(destination_dir, exist_ok=True)
+
         try:
-            shutil.copy(row["file"], os.path.join(output_dir, row["cluster-path"], file_name))
+            destination_file = os.path.join(destination_dir, file_name)
+            print(f"Copying {row['file']} to {destination_file}")
+            shutil.copy(row["file"], destination_file)
         except FileExistsError:
-            logging.warning(f"File {file_name} already exists in {row['cluster-path']}")
+            logging.warning(f"File {file_name} already exists in {destination_dir}")
 
 def main_worker(input_dir, output_dir, embed_out_dir):
     """
@@ -138,7 +145,7 @@ def main_worker(input_dir, output_dir, embed_out_dir):
             clusterable_embeddings = clustering.reduce(embeddings, 2)
             embeddings_df["visembedding"] = clusterable_embeddings.tolist()
             
-            # embeddings_df.to_pickle(os.path.join(embed_out_dir, "embeddings.pkl"))
+            embeddings_df.to_pickle(os.path.join(embed_out_dir, "embeddings.pkl"))
             # embeddings_df.drop(columns=["embedding"], inplace = True)
             embeddings_df.drop(columns=["embedding", "text"]).to_json(os.path.join(embed_out_dir, "embeddings.json"), orient="records")
             # embeddings_df.to_csv(os.path.join(embed_out_dir, "embeddings.csv"), index=False)
