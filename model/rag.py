@@ -6,7 +6,7 @@ import logging
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def rag(query, embeddings, top_n=3, threshold=0.5):
+def rag(query, embeddings, top_n=3, threshold=-0.01):
     """
     Extracts top keywords from a text segment using KeyBERT.
     """
@@ -25,9 +25,10 @@ def rag(query, embeddings, top_n=3, threshold=0.5):
     results = [(0, -1)] * top_n
     for i, e in enumerate(embeddings):
         dot = np.dot(query, e)
-        for j in range(results):
-            if dot > results[j][1]:
+        for j, res in enumerate(results):
+            if dot > res[1]:
                 results[j] = (i, dot)
+                break
 
     return [x[0] for x in results if x[1] > threshold]
 

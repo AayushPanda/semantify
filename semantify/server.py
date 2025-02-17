@@ -9,6 +9,8 @@ import zipfile
 import httpx  # Make sure to install httpx for making HTTP requests
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
+import subprocess
+import json
 
 import pandas as pd
 import asyncio
@@ -18,6 +20,7 @@ from contextlib import asynccontextmanager
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model import organiser, rag
 
+MODEL = 'llama2-uncensored'
 
 # Thread safe globals
 @asynccontextmanager
@@ -26,6 +29,16 @@ async def lifespan(app: FastAPI):
     embeddings_df = pd.DataFrame()
     organised = False
     yield  # FastAPI will run the app while this context is active
+    # Clean up
+    embeddings_df = pd.DataFrame()
+    organised = False
+    shutil.rmtree(UPLOAD_DIR)
+    shutil.rmtree(EXTRACT_DIR)
+    shutil.rmtree(ORGANISED_DIR)
+    shutil.rmtree(EMBEDDINGS_DIR)
+    shutil.rmtree(ZIP_DIR)
+    shutil.rmtree(DATA_DIR)
+
 
 app = FastAPI(lifespan=lifespan)
 state_lock = asyncio.Lock()  # thread safety
@@ -55,6 +68,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(EXTRACT_DIR, exist_ok=True)
 os.makedirs(ORGANISED_DIR, exist_ok=True)
 os.makedirs(EMBEDDINGS_DIR, exist_ok=True)
+os.makedirs(ZIP_DIR, exist_ok=True)
 
 @app.get("/embeddings")
 async def get_embeddings():
@@ -114,36 +128,52 @@ class GenerateRequest(BaseModel):
 
 @app.post("/generate")
 async def generate_response(request: GenerateRequest):
+    
     print(f"Received prompt: {request.prompt}")  # Log the received prompt
 
     if embeddings_df.empty:
         raise HTTPException(status_code=400, detail="No embeddings available to generate response")
 
     prompt = request.prompt
-
     hits = rag.rag(prompt, np.vstack(embeddings_df["embedding"].to_list()))
+    print(embeddings_df.head())
+    if hits == []:
+        ragfiles = []
+        ragtext = "No relevant content found to generate a response. Respond asking for a diifferent prompt" 
+    else:
+        ragfiles = embeddings_df[["file", "cluster-path"]].loc[hits]
+        print(ragfiles.head())
+        ragfiles = ragfiles.apply(lambda row: os.path.join(row['cluster-path'], os.path.basename(row['file'])), axis=1).to_list()
+
     ragtext = "\n\n".join(embeddings_df.loc[hits]["text"].to_list())
     prompt = f"""
-    Using the following text segments to generate a response to the prompt: {request.prompt}.
+    Using the predcominantly the relevant and only relevant content from the following text segments to generate a response to the prompt:
+
+    Prompt: {request.prompt}
+    
+    Segments:
     {ragtext}
     """
-
     print(f"Prompt after RAG: {prompt}")
 
     data = {
-        "model": "deepseek-r1:1.5b",
+        "model": MODEL,
         "prompt": prompt,
         "stream": False
     }
 
     async with httpx.AsyncClient() as client:
-        response = await client.post(OLLAMA_API_URL, json=data)
+        response = await client.post(OLLAMA_API_URL, json=data, timeout=None)
 
     if response.status_code != 200: # basically not successful request
         print(f"Error from DeepSeek: {response.status_code}, {response.text}") 
         raise HTTPException(status_code=response.status_code, detail="Error communicating with DeepSeek")
-
-    return JSONResponse(content=response.json())
+    
+    response_json = {}
+    response_json["response"] = response.json()["response"]
+    response_json["files"] = ragfiles
+    
+    return JSONResponse(content=response_json)
 
 if __name__ == "__main__":
     import uvicorn
