@@ -1,0 +1,13 @@
+numpy
+matplotlib
+pandas
+scikit-learn
+nltk
+umap-learn
+sentence_transformers
+keybert
+uvicorn
+fastapi[standard]
+python-multipart
+httpx 
+fitz

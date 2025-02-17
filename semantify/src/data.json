@@ -1,0 +1,10 @@
+{
+    "nodes": [
+      { "id": "Apple", "fx": 100, "fy": 100, "group": 1 },
+      { "id": "Banana", "fx": 200, "fy": 200, "group": 1 },
+      { "id": "Crack", "fx": 300, "fy": 150, "group": 2 },
+      { "id": "Drone", "fx": 400, "fy": 250, "group": 2 },
+      { "id": "Elephant", "fx": 500, "fy": 100, "group": 3 }
+    ],
+    "links": []
+  }
