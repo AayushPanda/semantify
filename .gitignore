@@ -1,5 +1,3 @@
-model/data/docs*
-model/outputs
 .venv/
 .idea/
 */__pycache__/
