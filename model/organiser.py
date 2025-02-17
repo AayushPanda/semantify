@@ -2,13 +2,12 @@ import os
 import logging
 import pandas as pd
 import numpy as np
-import segmenter
-import matplotlib.pyplot as plt
 from keybert import KeyBERT
-import clustering
 from sklearn.metrics import silhouette_score
 import argparse
 import shutil
+
+from model import clustering, segmenter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -83,7 +82,7 @@ def filesEmbedder(path, n_important=3):
     Reads all files from a directory and creates embeddings based on 
     the n most important semantic segments.
     """
-    embeddings = pd.DataFrame(columns=["file", "embedding", "topics"])
+    embeddings = pd.DataFrame(columns=["file", "topics", "text", "embedding"])
     paths = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(".txt")]
 
     for i, file in enumerate(paths):
@@ -99,7 +98,7 @@ def filesEmbedder(path, n_important=3):
 
         # Extract embeddings
         for seg in selected_segments:
-            embeddings.loc[len(embeddings)] = [file, seg["embedding"], "_".join(seg["topics"])]
+            embeddings.loc[len(embeddings)] = [file, "_".join(seg["topics"], seg["text"], seg["embedding"])]
 
     return embeddings
 
@@ -113,16 +112,13 @@ def generate_folder_structure(embeddings_df, output_dir):
         try:
             shutil.copy(row["file"], os.path.join(output_dir, row["cluster-path"], file_name))
         except FileExistsError:
-            logging.warning(f"File {file_name} already exists in {row["cluster-path"]}")
+            logging.warning(f"File {file_name} already exists in {row['cluster-path']}")
 
-def main():
-    parser = argparse.ArgumentParser(description='EMbedding Meaning Aggregator')
-    parser.add_argument('input_dir', type=str, help='Path with text files to be clustered')
-    parser.add_argument('output_dir', type=str, help='Path to store clustered files')
-    parser.add_argument("-embed_out_dir" , type=str, help="Path to store embeddings")
-    args = parser.parse_args()
-    input_dir = args.input_dir
-    output_dir = args.output_dir
+def main_worker(input_dir, output_dir, embed_out_dir):
+    """
+    Main function to extract embeddings, cluster, and generate folder structure.
+    returns: DataFrame with embeddings and cluster labels
+    """
     logging.info("Extracting embeddings...")
     embeddings_df = filesEmbedder(input_dir)
 
@@ -134,18 +130,33 @@ def main():
         generate_folder_structure(embeddings_df, output_dir)
         logging.info(f"Folder structure generated at {output_dir}")
 
-        if args.embed_out_dir:
-            logging.info(f"Saving embeddings to {args.embed_out_dir}")
+        if embed_out_dir:
+            logging.info(f"Saving embeddings to {embed_out_dir}")
             
             #reduce embeddings to 2D for visualization
             embeddings = np.vstack(embeddings_df["embedding"].to_list())
             clusterable_embeddings = clustering.reduce(embeddings, 2)
             embeddings_df["visembedding"] = clusterable_embeddings.tolist()
             
-            embeddings_df.to_pickle(os.path.join(args.embed_out_dir, "embeddings.pkl"))
-            embeddings_df.drop(columns=["embedding"], inplace = True)
-            embeddings_df.to_json(os.path.join(args.embed_out_dir, "embeddings.json"), orient="records")
-            embeddings_df.to_csv(os.path.join(args.embed_out_dir, "embeddings.csv"), index=False)
+            # embeddings_df.to_pickle(os.path.join(embed_out_dir, "embeddings.pkl"))
+            # embeddings_df.drop(columns=["embedding"], inplace = True)
+            embeddings_df.drop(columns=["embedding", "text"]).to_json(os.path.join(embed_out_dir, "embeddings.json"), orient="records")
+            # embeddings_df.to_csv(os.path.join(embed_out_dir, "embeddings.csv"), index=False)
+    return embeddings_df
+
+def main():
+    parser = argparse.ArgumentParser(description='EMbedding Meaning Aggregator')
+    parser.add_argument('input_dir', type=str, help='Path with text files to be clustered')
+    parser.add_argument('output_dir', type=str, help='Path to store clustered files')
+    parser.add_argument("-embed_out_dir" , type=str, help="Path to store embeddings")
+    args = parser.parse_args()
+    input_dir = args.input_dir
+    output_dir = args.output_dir
+    embed_out_dir = 0
+    if args.embed_out_dir:
+        embed_out_dir = args.embed_out_dir
+    
+    main_worker(input_dir, output_dir, embed_out_dir)
 
 if __name__ == "__main__":
     main()

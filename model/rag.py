@@ -1,15 +1,12 @@
-import pandas as pd
 import numpy as np
-import clustering
 import nltk
 from sentence_transformers import SentenceTransformer
-from keybert import KeyBERT
 import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def rag(query, embeddings, top_n=3):
+def rag(query, embeddings, top_n=3, threshold=0.5):
     """
     Extracts top keywords from a text segment using KeyBERT.
     """
@@ -32,5 +29,5 @@ def rag(query, embeddings, top_n=3):
             if dot > results[j][1]:
                 results[j] = (i, dot)
 
-    return [x[0] for x in results]
+    return [x[0] for x in results if x[1] > threshold]
 

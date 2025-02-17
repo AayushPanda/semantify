@@ -7,11 +7,13 @@ import pandas as pd
 import umap
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.manifold import TSNE
+import matplotlib
 from matplotlib import pyplot as plt
 from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
+matplotlib.use('Agg')  # Use the 'Agg' backend for non-interactive use
 
-from clustering import cluster, visualize_clusters
+from model.clustering import cluster, visualize_clusters
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

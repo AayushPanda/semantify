@@ -3,6 +3,8 @@ import logging
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.manifold import TSNE
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Use the 'Agg' backend for non-interactive use
 
 def reduce(embeddings, target_dims, method="UMAP"):
     """Reduces dimensionality of embeddings using given method."""
