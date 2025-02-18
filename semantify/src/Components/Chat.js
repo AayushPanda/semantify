@@ -23,6 +23,13 @@ export default function Chat() {
         // Handle the response from the server
         const deepSeekMessage = { text: response.data.response, type: 'assistant' };
         setMessages((prevMessages) => [...prevMessages, deepSeekMessage]);
+
+        // CHANGED THIS PART, links each file right now
+        const sourcesMessage = { 
+          text: `Sources Used:\n${response.data.files.map(file => `<a href="${file}" style="color: blue;">${file}</a>`).join('<br />')}`, 
+          type: 'assistant' 
+        };
+        setMessages((prevMessages) => [...prevMessages, sourcesMessage]);
       } catch (error) {
         console.error('Error communicating with the server:', error);
         setMessages((prevMessages) => [
@@ -37,9 +44,7 @@ export default function Chat() {
     <div className="chat-container">
       <div className="chat-messages">
         {messages.map((message, index) => (
-          <div key={index} className={`message ${message.type}`}>
-            {message.text}
-          </div>
+          <div key={index} className={`message ${message.type}`} dangerouslySetInnerHTML={{ __html: message.text }} /> // Use dangerouslySetInnerHTML to render HTML
         ))}
       </div>
       <form onSubmit={handleSubmit} className="chat-input-container">
