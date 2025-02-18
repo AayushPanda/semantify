@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 def find_optimal_clusters(embeddings, min_clusters=1, max_clusters=10):
     """
     Uses the Silhouette score to determine the optimal number of clusters.
-    Ensures that n_clusters is at least 2 to avoid errors.
+    n_clusters >= 2 needed
     """
     best_n = min_clusters
     best_score = -1
@@ -106,7 +106,6 @@ def generate_folder_structure(embeddings_df, output_dir):
     """
     Generates a folder structure based on hierarchical cluster labels.
     """
-
     for _, row in embeddings_df.iterrows():
         file_name = os.path.basename(row["file"])
         destination_dir = os.path.join(output_dir, row["cluster-path"])
@@ -116,7 +115,8 @@ def generate_folder_structure(embeddings_df, output_dir):
 
         try:
             destination_file = os.path.join(destination_dir, file_name)
-            print(f"Copying {row['file']} to {destination_file}")
+            
+            # print(f"Copying {row['file']} to {destination_file}")
             shutil.copy(row["file"], destination_file)
         except FileExistsError:
             logging.warning(f"File {file_name} already exists in {destination_dir}")
