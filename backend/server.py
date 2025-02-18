@@ -9,8 +9,8 @@ import zipfile
 import httpx  # Make sure to install httpx for making HTTP requests
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
-import subprocess
-import json
+
+import logging
 
 import pandas as pd
 import asyncio
@@ -19,6 +19,14 @@ from contextlib import asynccontextmanager
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model import organiser, rag
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    force=True  # Override existing logging configs
+)
+
 
 MODEL = 'llama2-uncensored'
 
@@ -116,6 +124,7 @@ async def upload_file(file: UploadFile = File(...)):
 
     async with state_lock:
         embeddings_df = organiser.main_worker(EXTRACT_DIR, ORGANISED_DIR, EMBEDDINGS_DIR)
+        embeddings_df["file"] = embeddings_df["file"].apply(lambda x: os.path.basename(x))
         organised = True
 
     return JSONResponse(content={"files": extracted_files})
@@ -136,7 +145,6 @@ async def generate_response(request: GenerateRequest):
 
     prompt = request.prompt
     hits = rag.rag(prompt, np.vstack(embeddings_df["embedding"].to_list()))
-    print(embeddings_df.head())
     if hits == []:
         ragfiles = []
         ragtext = "No relevant content found to generate a response. Respond asking for a diifferent prompt" 
@@ -147,14 +155,19 @@ async def generate_response(request: GenerateRequest):
 
     ragtext = "\n\n".join(embeddings_df.loc[hits]["text"].to_list())
     prompt = f"""
-    Using the predcominantly the relevant and only relevant content from the following text segments to generate a response to the prompt:
+    Given the following text segments, please use only the most relevant content to generate a response to the prompt:
 
     Prompt: {request.prompt}
-    
-    Segments:
+
+    Relevant Segments:
     {ragtext}
+
+    If no relevant content is found, please inform the user with the message: "No relevant content found. Please refine your query."
+    
+    Make sure to focus exclusively on information that directly addresses the prompt, excluding any irrelevant details. Discuss extensively with respect to the prompt and segment content.
     """
-    print(f"Prompt after RAG: {prompt}")
+
+    # print(f"Prompt after RAG: {prompt}")
 
     data = {
         "model": MODEL,
