@@ -16,6 +16,8 @@ def reduce(embeddings, target_dims, method="UMAP"):
         umapped = umap.UMAP(n_components=target_dims, n_neighbors=30, min_dist=0.2).fit_transform(embeddings)
         return umapped
 
+# TODO: try HDBSCAN for clustering for speed
+# from cuml.cluster import HDBSCAN -- RAPIDS for GPU-accelerated clustering
 def cluster(embeddings, thres=2.5):
     """Applies UMAP for dimensionality reduction and Agglomerative Clustering."""
     if len(embeddings[0]) > 30 and len(embeddings) > 30:
