@@ -7,7 +7,9 @@ from sklearn.metrics import silhouette_score
 import argparse
 import shutil
 
-from model import clustering, segmenter
+from model import clustering, segmenter, flattening
+
+KW_MODEL = KeyBERT()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -52,14 +54,13 @@ def hierarchical_cluster_and_label(embeddings_df, min_cluster_size=5, level=1, m
     embeddings_df["cluster"] = labels
     
     # Generate topic labels using KeyBERT
-    kw_model = KeyBERT()
     cluster_topic_labels = {}
 
     for cluster in np.unique(labels):
         sub_df = embeddings_df[labels == cluster]
         combined_text = " ".join(sub_df["topics"])
         
-        keywords = kw_model.extract_keywords(combined_text, keyphrase_ngram_range=(1, 2), stop_words="english", top_n=1)
+        keywords = KW_MODEL.extract_keywords(combined_text, keyphrase_ngram_range=(1, 2), stop_words="english", top_n=1)
         topic_label = "_".join([kw[0] for kw in keywords])
         cluster_topic_labels[cluster] = topic_label
 
@@ -94,7 +95,8 @@ def filesEmbedder(path, n_important=3):
             continue
 
         # Select top N most important segments based on number of sentences
-        selected_segments = sorted(segments, key=lambda x: x["num_sentences"], reverse=True)[:n_important]
+        # disabled for a test run
+        selected_segments = sorted(segments, key=lambda x: x["num_sentences"], reverse=True)#[:n_important]
 
         # Extract embeddings
         for seg in selected_segments:
@@ -133,10 +135,16 @@ def main_worker(input_dir, output_dir, embed_out_dir):
     embeddings_df = hierarchical_cluster_and_label(embeddings_df).drop(columns=["cluster"])
 
     if embeddings_df is not None:
-        logging.info("Generating folder structure...")
+        logging.info("Generating preliminary folder structure...")
         generate_folder_structure(embeddings_df, output_dir)
-        logging.info(f"Folder structure generated at {output_dir}")
-
+        
+        # The method of clustering right now can create many levels of folders all with the same files.
+        # This is not ideal and can be fixed by flattening the folder structure.
+        logging.info("Flattening folder structure...")
+        flattening.flatten(output_dir, os.path.join(os.path.dirname(output_dir), "temp"), embeddings_df)
+        shutil.rmtree(output_dir)
+        os.rename(os.path.join(os.path.dirname(output_dir), "temp"), output_dir)
+        
         if embed_out_dir:
             logging.info(f"Saving embeddings to {embed_out_dir}")
             
@@ -150,7 +158,7 @@ def main_worker(input_dir, output_dir, embed_out_dir):
 
             embeddings_df["file"] = embeddings_df["file"].apply(lambda x: os.path.basename(x))
             embeddings_df.drop(columns=["embedding", "text"]).to_json(os.path.join(embed_out_dir, "embeddings.json"), orient="records")
-            # embeddings_df.to_csv(os.path.join(embed_out_dir, "embeddings.csv"), index=False)
+            embeddings_df.to_csv(os.path.join(embed_out_dir, "embeddings.csv"), index=False)
     return embeddings_df
 
 def main():

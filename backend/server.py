@@ -91,7 +91,7 @@ async def download_generated_folder() -> FileResponse:
     if not organised:
         raise HTTPException(status_code=400, detail="No organised files to download")
     shutil.make_archive(os.path.join(ZIP_DIR, "organised_files"), 'zip', DATA_DIR, "organised_files")
-    return FileResponse(os.path.join(ZIP_DIR, "organised_files.zip"))
+    return FileResponse(os.path.join(ZIP_DIR, "organised_files.zip"), media_type="application/zip", filename="organised_files.zip")
     ...
 
 # Endpoint for uploading files
