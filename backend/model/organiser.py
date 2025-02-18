@@ -147,6 +147,8 @@ def main_worker(input_dir, output_dir, embed_out_dir):
             
             embeddings_df.to_pickle(os.path.join(embed_out_dir, "embeddings.pkl"))
             # embeddings_df.drop(columns=["embedding"], inplace = True)
+
+            embeddings_df["file"] = embeddings_df["file"].apply(lambda x: os.path.basename(x))
             embeddings_df.drop(columns=["embedding", "text"]).to_json(os.path.join(embed_out_dir, "embeddings.json"), orient="records")
             # embeddings_df.to_csv(os.path.join(embed_out_dir, "embeddings.csv"), index=False)
     return embeddings_df

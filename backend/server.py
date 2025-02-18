@@ -124,7 +124,6 @@ async def upload_file(file: UploadFile = File(...)):
 
     async with state_lock:
         embeddings_df = organiser.main_worker(EXTRACT_DIR, ORGANISED_DIR, EMBEDDINGS_DIR)
-        embeddings_df["file"] = embeddings_df["file"].apply(lambda x: os.path.basename(x))
         organised = True
 
     return JSONResponse(content={"files": extracted_files})
