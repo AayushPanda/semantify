@@ -5,23 +5,42 @@ import nltk
 import numpy as np
 import pandas as pd
 import umap
-from sklearn.cluster import AgglomerativeClustering
 from sklearn.manifold import TSNE
 import matplotlib
 from matplotlib import pyplot as plt
 from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
+from torch.utils.data import DataLoader
+
 matplotlib.use('Agg')  # Use the 'Agg' backend for non-interactive use
 
 from model.clustering import cluster, visualize_clusters
 
+# Download NLTK tokenizer if necessary
+nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)
+
+#CUDA
+import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# MODEL = SentenceTransformer('all-MiniLM-L6-v2').to(device)
+MODEL = SentenceTransformer('all-MiniLM-L6-v2').half().to(device)   # if half precision is supported .. doesnt really seem to run faster though
+KW_MODEL = KeyBERT(model=MODEL)
+
+print(f"Using processing device: {MODEL.device}")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def embed_sentences(sentences, model):
+def embed_sentences(sentences, model, batch_size=32):
     """Generates embeddings for sentences using Sentence Transformer."""
-    return model.encode(sentences)
-
+    dataloader = DataLoader(sentences, batch_size=batch_size, shuffle=False)
+    embeddings = []
+    for batch in dataloader:
+        batch_emb = model.encode(batch, device=device, convert_to_tensor=True).cpu().numpy()
+        embeddings.append(batch_emb)
+    return np.vstack(embeddings)
 
 def extract_keywords(segment_text, kw_model, top_n=3):
     """Extracts top keywords from a text segment using KeyBERT."""
@@ -36,9 +55,7 @@ def process_document(file_path, vis=False):
     text = ""
     with open(file_path, 'r', encoding='utf-8') as f:
         text = f.read()
-    # Download NLTK tokenizer if necessary
-    nltk.download('punkt', quiet=True)
-    nltk.download('punkt_tab', quiet=True)
+
 
     # Segment text into sentences
     sentences = nltk.sent_tokenize(text)
@@ -46,12 +63,8 @@ def process_document(file_path, vis=False):
         logging.warning("No sentences detected in document.")
         return []
 
-    # Initialize models
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    kw_model = KeyBERT(model=model)
-
     # Generate sentence embeddings
-    embeddings = embed_sentences(sentences, model)
+    embeddings = embed_sentences(sentences, MODEL)
 
     # Perform clustering
     cluster_labels, clusterable_embedding = cluster(embeddings)
@@ -68,10 +81,10 @@ def process_document(file_path, vis=False):
     results = []
     for i, (label, segment) in enumerate(segments.items()):
         segment_text = " ".join(segment)
-        topics = extract_keywords(segment_text, kw_model)
+        topics = extract_keywords(segment_text, KW_MODEL)
 
         # Generate embedding for the segment
-        segment_embedding = model.encode(segment_text)
+        segment_embedding = MODEL.encode(segment_text, device=device)
 
         results.append({
             "segment_number": i + 1,
