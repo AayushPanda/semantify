@@ -1,0 +1,30 @@
+Memory optimisation for rag retrievals
+Better directory names (especially after flatenning) --> kinda better now
+try HDBSCAN for clustering for speed
+extract uploaded files without preserving directory structure
+loading/progress indicator for upload and processing
+
+fix 
+  File "C:\Users\Aayush\Documents\GitHub\semantify\backend\model\clustering.py", line 16, in reduce
+    umapped = umap.UMAP(n_components=target_dims, n_neighbors=30, min_dist=0.2).fit_transform(embeddings)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aayush\Documents\GitHub\semantify\.venv\Lib\site-packages\umap\umap_.py", line 2928, in fit_transform
+    self.fit(X, y, force_all_finite, **kwargs)
+  File "C:\Users\Aayush\Documents\GitHub\semantify\.venv\Lib\site-packages\umap\umap_.py", line 2817, in fit
+    self.embedding_, aux_data = self._fit_embed_data(
+                                ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aayush\Documents\GitHub\semantify\.venv\Lib\site-packages\umap\umap_.py", line 2865, in _fit_embed_data
+    return simplicial_set_embedding(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aayush\Documents\GitHub\semantify\.venv\Lib\site-packages\umap\umap_.py", line 1109, in simplicial_set_embedding
+    embedding = spectral_layout(
+                ^^^^^^^^^^^^^^^^
+  File "C:\Users\Aayush\Documents\GitHub\semantify\.venv\Lib\site-packages\umap\spectral.py", line 304, in spectral_layout
+    return _spectral_layout(
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aayush\Documents\GitHub\semantify\.venv\Lib\site-packages\umap\spectral.py", line 519, in _spectral_layout
+    eigenvalues, eigenvectors = scipy.sparse.linalg.eigsh(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aayush\Documents\GitHub\semantify\.venv\Lib\site-packages\scipy\sparse\linalg\_eigen\arpack\arpack.py", line 1604, in eigsh
+    raise TypeError("Cannot use scipy.linalg.eigh for sparse A with "
+TypeError: Cannot use scipy.linalg.eigh for sparse A with k >= N. Use scipy.linalg.eigh(A.toarray()) or reduce k.

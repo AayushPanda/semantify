@@ -161,7 +161,7 @@ async def generate_response(request: GenerateRequest):
     Relevant Segments:
     {ragtext}
 
-    If no relevant content is found, please inform the user with the message: "No relevant content found. Please refine your query."
+    If no segments are irrelevant, please inform the user with the message: "No relevant content found. Please refine your query."
     
     Make sure to focus exclusively on information that directly addresses the prompt, excluding any irrelevant details. Discuss extensively with respect to the prompt and segment content.
     """

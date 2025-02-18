@@ -2,6 +2,9 @@ import os
 import shutil
 from collections import defaultdict
 import hashlib
+from keybert import KeyBERT
+
+KW_MODEL = KeyBERT()
 
 def parent(path):
     return os.path.join(path, os.pardir)
@@ -58,8 +61,12 @@ def flattenh(source, curr, target, embeddings_df):
             mergedName = "_".join(names)
             seen = set()
             for f in get_files_in_directory(dir_paths[0]):
-                relpath = os.path.join(os.path.relpath(curr, source), mergedName)
 
+                combined_text = "\n".join(embeddings_df.loc[embeddings_df["file"] == os.path.basename(f), "text"].to_list())
+                keywords = KW_MODEL.extract_keywords(combined_text, keyphrase_ngram_range=(1, 2), stop_words="english", top_n=1)
+                topic_label = "_".join([kw[0] for kw in list(set(keywords))])
+                relpath = os.path.join(os.path.relpath(curr, source), topic_label)
+                
                 embeddings_df.loc[(embeddings_df["file"] == os.path.basename(f)) & (embeddings_df["cluster-path"] == relpath), "cluster-path"] = relpath
 
                 if get_file_hash(f) in seen:
