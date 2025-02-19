@@ -3,6 +3,7 @@ Better directory names (especially after flatenning) --> kinda better now
 try HDBSCAN for clustering for speed
 extract uploaded files without preserving directory structure
 loading/progress indicator for upload and processing
+l52 Graph.js
 
 fix 
   File "C:\Users\Aayush\Documents\GitHub\semantify\backend\model\clustering.py", line 16, in reduce

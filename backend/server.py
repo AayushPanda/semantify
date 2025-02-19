@@ -9,7 +9,7 @@ import zipfile
 import httpx  # Make sure to install httpx for making HTTP requests
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
-
+import json
 import logging
 
 import pandas as pd
@@ -26,6 +26,38 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     force=True  # Override existing logging configs
 )
+
+# Function to convert the source JSON
+def convertToVisEmbeddings(source_json):
+    result = {
+        "nodes": [],
+        "links": []
+    }
+
+    # Map to store cluster-path to group mapping
+    cluster_path_to_group = {}
+    current_group = 1
+
+    for item in source_json:
+        cluster_path = item["cluster-path"]
+        
+        # If the cluster-path is already in the map, use the existing group
+        if cluster_path not in cluster_path_to_group:
+            cluster_path_to_group[cluster_path] = current_group
+            current_group += 1
+        
+        group = cluster_path_to_group[cluster_path]
+
+        node = {
+            "id": item["file"],  # Use the 'file' as the node ID
+            "fx": item["visembedding"][0]*200,  # First value of 'visembedding' as fx
+            "fy": item["visembedding"][1]*200,  # Second value of 'visembedding' as fy
+            "group": group  # Group based on the cluster-path
+        }
+        result["nodes"].append(node)
+
+    return result
+
 
 
 MODEL = 'llama2-uncensored'
@@ -125,8 +157,13 @@ async def upload_file(file: UploadFile = File(...)):
     async with state_lock:
         embeddings_df = organiser.main_worker(EXTRACT_DIR, ORGANISED_DIR, EMBEDDINGS_DIR)
         organised = True
+    
+    visEmbeddingsJson = ""
+    with open(os.path.join(EMBEDDINGS_DIR, "embeddings.json")) as f:
+        visEmbeddingsJson = json.load(f)
+    visEmbeddingsJson = convertToVisEmbeddings(visEmbeddingsJson)
 
-    return JSONResponse(content={"files": extracted_files})
+    return JSONResponse(visEmbeddingsJson)
 
 # endpoint for generating responses from DeepSeek
 OLLAMA_API_URL = "http://127.0.0.1:11434/api/generate"
