@@ -18,12 +18,6 @@ const findNode = (nodes, idName) => { // WILL GET THE AVERAGE X AND Y OF WHAT YO
   return { x: avgX, y: avgY };
 }
 
-
-// HAVE AN ARRAY FOR HEADINGS....
-// I SHOULD GET A PARAMETER TO ADD SMTH TO THE DATA....
-// ALSO NEED A METHOD TO GO TO SOMEWHERE AND ZOOM IN ON A CERTAIN PART...
-// NOW HOW TO MAKE METHODS THAT WILL UPDATE ON EVERY CALL?
-// Should do a loop to find all the different parameter thingies...
 let start = true;
 
 
@@ -44,8 +38,7 @@ export default function Graph() {
       const newZoom = graphRef.current.zoom();
       if (Math.abs(newZoom-zoomLevel)!=0) {
         setZoomLevel(newZoom);
-        console.log("Zoom Level Changed:", newZoom);
-        if(newZoom < 2){
+        if(newZoom >= 2){
           setDataFile(data_subheadings);
         }
         else{
