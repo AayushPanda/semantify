@@ -26,7 +26,7 @@ export default function Chat() {
 
         // CHANGED THIS PART, links each file right now
         const sourcesMessage = { 
-          text: `Sources Used:\n${response.data.files.map(file => `<a href="${file}" style="color: blue;">${file}</a>`).join('<br />')}`, 
+          text: `Sources Used:<br /><br /><br />${response.data.files.map(file => `<a href="${file}" style="color: blue;">${file}</a><br /><br />`).join('')}`, 
           type: 'assistant' 
         };
         setMessages((prevMessages) => [...prevMessages, sourcesMessage]);
