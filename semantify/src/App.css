@@ -1,21 +1,73 @@
 @import url('https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@400;700&display=swap');
 
-* {
-  background-color: #E1E1E1;
-  font-family: 'Kumbh Sans';
+body {
   margin: 0;
   padding: 0;
+  background: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Add a base white background to ensure consistency */
+#root {
+  background-color: rgba(255, 255, 255, 0.9);
+  min-height: 100vh;
+}
+
+/* Ensure the gradient stays centered and responsive */
+@media screen and (max-width: 768px) {
+  body {
+    background-size: cover;
+  }
 }
 
 .App {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
+}
+
+.App::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at 70% 50%,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 187, 97, 0.4) 40%,
+    rgba(255, 137, 93, 0.3) 45%,
+    rgba(150, 183, 230, 0.35) 65%,
+    rgba(222, 232, 255, 0.4) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.left-section, 
+.right-section {
+  background: transparent;
+}
+
+.graph-container,
+.chat-container {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.10);
 }
 
 .Header {
   width: 100%;
-  padding: 15px 0;
+  padding: 8px 0;
   text-align: center;
   border-bottom: 1px solid #E8E8E8;
   background-color: #F5F5F5;
@@ -33,6 +85,7 @@
   display: flex;
   flex: 1;
   padding: 20px;
+  background: transparent;
 }
 
 .left-section {
@@ -41,6 +94,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background: transparent;
 }
 
 .right-section {
@@ -50,18 +104,18 @@
   flex-direction: column;
   gap: 20px;
   max-width: 400px;
+  background: transparent;
 }
 
 .graph-container {
-  background: white;
+  background:  rgba(245, 245, 245, 0.90);
   border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   flex: 1;
   height: 600px;
   position: relative;
   overflow: hidden;
-  border: 2px solid #E8E8E8;
+  border: 2px solid rgba(245, 245, 245, 0.50);
 }
 
 .graph-container > div {
@@ -106,7 +160,8 @@
   display: flex;
   gap: 20px;
   padding: 20px;
-  background: white;
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.10);
+  background:  rgba(245, 245, 245, 0.90);
   border-radius: 15px;
   border: 1px solid #E8E8E8;
 }
@@ -114,7 +169,7 @@
 button {
   padding: 15px 40px;
   border: 1px solid #E8E8E8;
-  border-radius: 25px;
+  border-radius: 15px;
   font-size: 18px;
   cursor: pointer;
   color: white;
@@ -130,37 +185,37 @@ button:hover {
 .upload-button {
   padding: 15px 40px;
   border: 1px solid #E8E8E8;
-  border-radius: 25px;
-  font-size: 18px;
+  text-align: center;
+  border-radius: 15px;
+  font-family: "Kumbh Sans";
+  font-size: 20px;
   cursor: pointer;
   color: white;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+
 .download-button {
-  background-color: #77B5D9;
+  background: rgba(109, 174, 219, 0.50);
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.10);
 }
 
 .upload-button {
-  background-color: #1D70A2;
+  background: rgba(255, 187, 97, 0.90);
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.10);
 }
 
-.download-button:hover,
-.upload-button:hover {
-  box-shadow: 0 0 15px rgba(29, 112, 162, 1), 0 0 30px rgba(29, 112, 162, 0.5);
-  border-color: rgba(29, 112, 162, 1);
-}
 
 .chat-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   max-height: 80vh;
-  background: #F5F5F5;
+  background: rgba(245, 245, 245, 0.50);
   border-radius: 15px;
   border: 2px solid #E8E8E8;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.10);
 }
 
 .chat-messages {
@@ -171,7 +226,7 @@ button:hover {
   flex-direction: column;
   gap: 16px;
   max-height: calc(80vh - 100px);
-  background: #F5F5F5;
+  background: transparent;
 }
 
 .message {
@@ -179,7 +234,7 @@ button:hover {
   border-radius: 12px;
   max-width: 80%;
   word-wrap: break-word;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.05);
 }
 
 .message.user {
@@ -196,24 +251,26 @@ button:hover {
 
 .chat-input-container {
   display: flex;
-  padding: 16px;
-  gap: 8px;
-  border-top: 2px solid #E8E8E8;
+  padding: 12px;
+  gap: 12px;
+  margin: 20px;
+  margin-top: 0;
+  border-radius: 18px;
   background-color: white;
   position: sticky;
   bottom: 0;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.10);
 }
 
 .chat-input {
   flex: 1;
   padding: 12px 16px;
-  border: 1px solid #E8E8E8;
+  border: none;
   border-radius: 25px;
-  background-color: #F5F5F5;
+  background-color: transparent;
   font-size: 14px;
   outline: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  color: #666;
 }
 
 .send-button {
@@ -221,18 +278,20 @@ button:hover {
   height: 40px;
   border: none;
   border-radius: 20px;
-  background-color: #1D70A2;
+  background-color: rgba(255, 187, 97, 0.70);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 8px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.10);
 }
 
 .send-button:hover {
-  background-color: #165c87;
+  background-color: rgba(255, 187, 97, 0.9);
+  transform: scale(1.05);
 }
 
-.send-button-arrow{
+.send-button-arrow {
   background: none;
 }
