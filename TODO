@@ -1,6 +1,8 @@
 Memory optimisation for rag retrievals
 Better directory names (especially after flatenning) --> kinda better now
 try HDBSCAN for clustering for speed
+zip extraction needs to account for possible dirstructure
+file typ checking
 extract uploaded files without preserving directory structure
 loading/progress indicator for upload and processing
 l52 Graph.js
