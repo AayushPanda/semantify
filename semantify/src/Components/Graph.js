@@ -18,6 +18,12 @@ const findNode = (nodes, idName) => { // WILL GET THE AVERAGE X AND Y OF WHAT YO
   return { x: avgX, y: avgY };
 }
 
+
+// HAVE AN ARRAY FOR HEADINGS....
+// I SHOULD GET A PARAMETER TO ADD SMTH TO THE DATA....
+// ALSO NEED A METHOD TO GO TO SOMEWHERE AND ZOOM IN ON A CERTAIN PART...
+// NOW HOW TO MAKE METHODS THAT WILL UPDATE ON EVERY CALL?
+// Should do a loop to find all the different parameter thingies...
 let start = true;
 
 
@@ -38,7 +44,8 @@ export default function Graph() {
       const newZoom = graphRef.current.zoom();
       if (Math.abs(newZoom-zoomLevel)!=0) {
         setZoomLevel(newZoom);
-        if(newZoom >= 2){
+        console.log("Zoom Level Changed:", newZoom);
+        if(newZoom < 2){
           setDataFile(data_subheadings);
         }
         else{
@@ -64,7 +71,7 @@ export default function Graph() {
         height={window.innerHeight}
         graphData={dataFile}
         nodeAutoColorBy="group"
-        backgroundColor="#ffffff"
+
         cooldownTicks={0}
         yOffset={0}
         enableNodeDrag={false}
@@ -84,7 +91,7 @@ export default function Graph() {
           const textWidth = ctx.measureText(label).width;
           const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
 
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0)';
           ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
 
           ctx.textAlign = 'center';
