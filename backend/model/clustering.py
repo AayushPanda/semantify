@@ -13,8 +13,9 @@ def reduce(embeddings, target_dims, method="UMAP"):
         tsne_coords = tsne.fit_transform(embeddings)
         return tsne_coords
     else:
-        umapped = umap.UMAP(n_components=target_dims, n_neighbors=30, min_dist=0.2).fit_transform(embeddings)
-        return umapped
+        if len(embeddings) <= target_dims:  # Avoid k >= N error
+            target_dims = max(2, len(embeddings) - 1)
+        return umap.UMAP(n_components=target_dims, n_neighbors=min(15, len(embeddings) - 1), min_dist=0.2).fit_transform(embeddings)
 
 # TODO: try HDBSCAN for clustering for speed
 # from cuml.cluster import HDBSCAN -- RAPIDS for GPU-accelerated clustering
