@@ -243,6 +243,12 @@ button:hover {
   align-self: flex-end;
 }
 
+.message.error{
+  background-color:  white;
+  color: #333;
+  align-self: flex-start;
+}
+
 .message.assistant {
   background-color: white;
   color: #333;
