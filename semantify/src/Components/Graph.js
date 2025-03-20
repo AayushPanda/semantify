@@ -1,8 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import data_subheadings from '../data_subheadings.json';
-import data_headings from '../data_headings.json';
-
 
 const calculateCenter = (nodes) => {
   if (!nodes || nodes.length === 0) return { x: 0, y: 0 };
@@ -11,12 +8,29 @@ const calculateCenter = (nodes) => {
   return { x: avgX, y: avgY };
 };
 
+/*
 const findNode = (nodes, idName) => { // WILL GET THE AVERAGE X AND Y OF WHAT YOU WANT...
   if (!nodes || nodes.length === 0) return { x: 0, y: 0 };
   const avgX = nodes.filter(node => node.id=idName).reduce((sum, node) => sum + node.x, 0) / nodes.length;
   const avgY = nodes.filter(node => node.Inner==idName).reduce((sum, node) => sum + node.y, 0) / nodes.length;
   return { x: avgX, y: avgY };
-}
+}*/
+
+/*
+const gotoNode = (nodes, nodeName) => { // will go to a specific node
+  if (!nodes || nodes.length === 0){
+    console.log("ERROR! COULD NOT FIND NODE");
+    return { x: 0, y: 0 }; 
+  }
+
+  // ok this does it...
+  const X_coord = nodes.filter(node => node.id=idName).reduce((sum, node) => sum + node.x, 0) / nodes.length; // would not be the id attribute anymore...
+  const Y_coord = nodes.filter(node => node.Inner==idName).reduce((sum, node) => sum + node.y, 0) / nodes.length;
+  
+  return { x: X_coord, y: Y_coord };
+}*/
+
+
 
 
 // HAVE AN ARRAY FOR HEADINGS....
@@ -26,13 +40,12 @@ const findNode = (nodes, idName) => { // WILL GET THE AVERAGE X AND Y OF WHAT YO
 // Should do a loop to find all the different parameter thingies...
 let start = true;
 
-
-export default function Graph() {
+export default function Graph( {dataFile, setDataFile} ) {
 
   const graphRef = useRef();
 
   const [zoomLevel, setZoomLevel] = useState(null);
-  const [dataFile, setDataFile] = useState(data_headings); // Default file
+  
 
   // Sets and updates zoomLevel
   useEffect(() => { 
@@ -45,12 +58,14 @@ export default function Graph() {
       if (Math.abs(newZoom-zoomLevel)!=0) {
         setZoomLevel(newZoom);
         console.log("Zoom Level Changed:", newZoom);
+        /*
         if(newZoom < 2){
           setDataFile(data_subheadings);
         }
         else{
           setDataFile(data_headings);
-        }
+        }*/
+
       }
       animationFrameId = requestAnimationFrame(trackZoom);
     };

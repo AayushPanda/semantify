@@ -1,0 +1,11 @@
+{
+    "nodes": [
+      { "id": "Apple", "fx": 100, "fy": 100, "group": 1, "Outer": "Fruit", "Inner": "Food"},
+      { "id": "Banana", "fx": 200, "fy": 200, "group": 1, "Outer": "Fruit", "Inner": "Food"},
+      { "id": "Crack", "fx": 300, "fy": 150, "group": 2, "Outer": "Fruit",  "Inner": "Drug"},
+      { "id": "Meth", "fx": 360, "fy": 232, "group": 2, "Outer": "Fruit",  "Inner": "Drug"},
+      { "id": "Drone", "fx": 400, "fy": 250, "group": 2, "Outer": "Plant",  "Inner": "random"},
+      { "id": "Elephant", "fx": 500, "fy": 100, "group": 3, "Outer": "Plant", "Inner": "random"}
+    ],
+    "links": []
+  }
