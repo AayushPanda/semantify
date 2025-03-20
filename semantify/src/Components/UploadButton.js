@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 
-export default function UploadButton() {
+export default function UploadButton( {setDataFile} ) {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -15,6 +15,9 @@ export default function UploadButton() {
             })
             .then(response => {
                 console.log('Success:', response.data);
+                
+                setDataFile(response.data);
+
                 // Update UI with response data
             })
             .catch(error => {
