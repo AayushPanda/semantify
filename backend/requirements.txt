@@ -11,3 +11,4 @@ fastapi[standard]
 python-multipart
 httpx 
 fitz
+python-docx
