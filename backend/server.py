@@ -19,6 +19,7 @@ from contextlib import asynccontextmanager
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model import organiser, rag
+from processing import convert
 
 
 logging.basicConfig(
@@ -73,7 +74,7 @@ async def lifespan(app: FastAPI):
     embeddings_df = pd.DataFrame()
     organised = False
     shutil.rmtree(UPLOAD_DIR)
-    shutil.rmtree(EXTRACT_DIR)
+    shutil.rmtree(PROCESSED_DIR)
     shutil.rmtree(ORGANISED_DIR)
     shutil.rmtree(EMBEDDINGS_DIR)
     shutil.rmtree(ZIP_DIR)
@@ -95,19 +96,23 @@ app.add_middleware(
 # Update directory structure
 DATA_DIR = "data"
 UPLOAD_DIR = os.path.join(DATA_DIR, "uploaded_zips")
-EXTRACT_DIR = os.path.join(DATA_DIR, "extracted_files")
+PROCESSED_DIR = os.path.join(DATA_DIR, "processed_files")
 
 # Model outputs
 ORGANISED_DIR = os.path.join(DATA_DIR, "organised_files")
 EMBEDDINGS_DIR = os.path.join(DATA_DIR, "embeddings")
 ZIP_DIR = os.path.join(DATA_DIR, "zips")
 
+# For download
+EXTRACT_DIR = os.path.join(DATA_DIR, "extracted_files")
+
 # Create all necessary directories
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(EXTRACT_DIR, exist_ok=True)
+os.makedirs(PROCESSED_DIR, exist_ok=True)
 os.makedirs(ORGANISED_DIR, exist_ok=True)
 os.makedirs(EMBEDDINGS_DIR, exist_ok=True)
+os.makedirs(EXTRACT_DIR, exist_ok=True)
 os.makedirs(ZIP_DIR, exist_ok=True)
 
 @app.get("/embeddings")
@@ -122,7 +127,28 @@ async def get_embeddings():
 async def download_generated_folder() -> FileResponse:
     if not organised:
         raise HTTPException(status_code=400, detail="No organised files to download")
-    shutil.make_archive(os.path.join(ZIP_DIR, "organised_files"), 'zip', DATA_DIR, "organised_files")
+    
+    global embeddings_df
+    TEMP_DIR = os.path.join(DATA_DIR, "TEMP_DIR")
+    os.makedirs(TEMP_DIR, exist_ok=True)
+    
+    for _, row in embeddings_df.iterrows():
+        file_name = os.path.basename(row["file"])
+        source_path = os.path.join(EXTRACT_DIR, file_name)
+
+        destination_dir = os.path.join(TEMP_DIR, row["cluster-path"])
+        destination_file = os.path.join(destination_dir, file_name)
+        # Ensure the destination directory exists
+        os.makedirs(destination_dir, exist_ok=True)
+
+        try:
+            # print(f"Copying {row['file']} to {destination_file}")
+            shutil.copy(source_path, destination_file)
+        except FileExistsError:
+            logging.warning(f"File {file_name} already exists in {destination_dir}")
+
+    shutil.make_archive(os.path.join(ZIP_DIR, "organised_files"), 'zip', DATA_DIR, "TEMP_DIR")
+    shutil.rmtree(TEMP_DIR)
     return FileResponse(os.path.join(ZIP_DIR, "organised_files.zip"), media_type="application/zip", filename="organised_files.zip")
     ...
 
@@ -147,15 +173,22 @@ async def upload_file(file: UploadFile = File(...)):
     #     with open(os.path.join(EXTRACT_DIR, filename), "wb") as out:
     #         out.write(file.read())
 
-    # Extract the zip file
-    with zipfile.ZipFile(file_location, 'r') as zip_ref:
-        zip_ref.extractall(EXTRACT_DIR)
+    # Extract the zip file ignoring directory structure
+    os.system(f"unzip -j {file_location} -d {EXTRACT_DIR}")
 
-    # List extracted files
-    extracted_files = os.listdir(EXTRACT_DIR)
+    for root, dirs, files in os.walk(EXTRACT_DIR):
+        for file in files:
+            file_path = os.path.join(root, file)
+            extension = file_path.split('.')[-1]
+            if extension == "docx":
+                convert.docx_to_txt(file_path, os.path.join(PROCESSED_DIR, file))
+            elif extension == "pdf":
+                convert.pdf_to_txt(file_path, os.path.join(PROCESSED_DIR, file))
+            else:
+                shutil.copy(file_path, PROCESSED_DIR)
 
     async with state_lock:
-        embeddings_df = organiser.main_worker(EXTRACT_DIR, ORGANISED_DIR, EMBEDDINGS_DIR)
+        embeddings_df = organiser.main_worker(PROCESSED_DIR, ORGANISED_DIR, EMBEDDINGS_DIR)
         organised = True
     
     visEmbeddingsJson = ""

@@ -1,0 +1,83 @@
+Purpose: Selection for role of Software Quality Intern at Garmin Cochrane
+Setting: COMMST225 Classroom
+
+I. INTRODUCTION
+Rapport Building: Say hi and greet, ask how doing
+Self-Introduction: Hi, I am your interviewer today for …,
+Orientation:
+Purpose: Assess fit for the Software Quality Intern role.
+Preview: Will ask only behavioural questions to get an idea of how the person works
+Length: 15 minutes.
+Transition to Body: Ok, so just to start off…
+
+II. BODY
+Question Focus: Problem-Solving & Approach to challenges
+Primary Question #1: "Tell us about a time you failed or struggled at something. How did this experience help you grow as a person?”
+Scoring Rubric: (NOTE: ABANDONING PROBLEM SHOULD NOT BE AUTOMATIC NEGATIVE, PROVIDED REASONING IS GIVEN)
+5: Clearly describes a relevant failure or challenge with strong personal impact. Demonstrates self-reflection, growth, and a proactive response. Provides a concrete example of how the experience shaped skills, mindset, or approach to future challenges
+3: Mild self-reflection, limited growth and passive approach to problems. Lack of concrete examples of how personally affected
+1: Incoherent example. No meaningful reflection on failure or learning.
+Possible Probing Questions:
+"Who did you approach to help you solve the problem?"
+"What reasoning did you use to decide whether the problem is worth tackling, or should be abandoned?"
+Transition
+
+
+
+Question Focus: Teamwork & Collaboration
+Primary Question #2:
+ "Describe a time you worked in a team towards some goal. What role did you play?"
+ Scoring Rubric:
+5: Clearly describes role, contribution, and effective teamwork
+3: Describes teamwork but lacks detail on personal contribution
+1: Minimal details or unclear explanation of teamwork
+Possible Probing Questions:
+"How did you handle disagreements within the team?"
+If had a leadership position: ask how they would be in non-leadership role
+If non-leadership role: ask why they didn’t take leadership role
+Transition
+Question Focus: Adaptability & Learning
+Primary Question #3:
+ "Tell me about a time you had to learn a new skill in short order. What was your approach to this"
+ Scoring Rubric:
+5: Describes structured learning approach and successful application
+3: Mentions learning experience but lacks depth in approach or application
+1: Limited details or unclear learning process
+Possible Probing Questions:
+"What resources did you use to learn?"
+"How did you measure your progress?"
+Transition
+Question Focus: Attention to Detail
+Primary Question #4:
+ "QA roles require strong attention to detail. Can you describe a time when you caught an error others missed?"
+ Scoring Rubric:
+5: Provides a strong example with impact and clear attention to detail
+3: Mentions an example but lacks depth or impact
+1: Weak or unclear response
+Possible Probing Questions:
+"What steps did you take to ensure accuracy?"
+"How did you communicate the issue to others?"
+Transition
+
+
+III. Info on Position
+Organization/Job Information:
+Job Responsibilities:
+Execute manual and automated tests of Garmin software
+Verify issues reported to quality team for validity and reproducibility
+Document and communicate test results in defect management system
+Work closely with Software Engineers to assist in problem resolution
+Verify software fixes in new software versions
+Assist in test case maintenance as necessary to keep repository current
+Excitement to create and deliver products for cycling, running, swimming and fitness!
+We have a very informal office culture, and encourage an open-knowledge environment for ideation and innovation. So, you can feel free to pick our engineers’ brains about things you find interesting, check out projects outside your formal role that you find interesting and so on and so forth. We do a bunch of fun stuff, such as watch movies and such.
+Transition to EE Questions: "Now, do you have any questions for us?"
+Answer EE Questions
+Transition to Closing: "Before we wrap up, I want to thank you for your time."
+
+IV. CONCLUSION
+Express Appreciation: "Thank you for sharing your experiences with us today."
+Summarise interview
+Provide Further Contact Information
+
+

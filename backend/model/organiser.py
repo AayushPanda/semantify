@@ -84,7 +84,7 @@ def filesEmbedder(path, n_important=3):
     the n most important semantic segments.
     """
     embeddings = pd.DataFrame(columns=["file", "topics", "text", "embedding"])
-    paths = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(".txt")]
+    paths = [os.path.join(path, f) for f in os.listdir(path) if (f.endswith(".txt") or f.endswith(".pdf") or f.endswith(".docx"))]
 
     for i, file in enumerate(paths):
         logging.info(f"Processing file {i+1}/{len(paths)}: {file}")
@@ -159,6 +159,7 @@ def main_worker(input_dir, output_dir, embed_out_dir):
             embeddings_df["file"] = embeddings_df["file"].apply(lambda x: os.path.basename(x))
             embeddings_df.drop(columns=["embedding", "text"]).to_json(os.path.join(embed_out_dir, "embeddings.json"), orient="records")
             embeddings_df.to_csv(os.path.join(embed_out_dir, "embeddings.csv"), index=False)
+    print(embeddings_df.head())
     return embeddings_df
 
 def main():
