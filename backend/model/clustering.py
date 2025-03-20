@@ -8,14 +8,37 @@ matplotlib.use('Agg')  # Use the 'Agg' backend for non-interactive use
 
 def reduce(embeddings, target_dims, method="UMAP"):
     """Reduces dimensionality of embeddings using given method."""
-    if method=="TSNE":
-        tsne = TSNE(n_components=target_dims, perplexity=min(30, len(embeddings) - 1), n_iter=300)
-        tsne_coords = tsne.fit_transform(embeddings)
-        return tsne_coords
-    else:
-        if len(embeddings) <= target_dims:  # Avoid k >= N error
-            target_dims = max(2, len(embeddings) - 1)
-        return umap.UMAP(n_components=target_dims, n_neighbors=min(15, len(embeddings) - 1), min_dist=0.2).fit_transform(embeddings)
+    n_samples = len(embeddings)
+    
+    # Ensure we have enough samples for the requested dimensions
+    if n_samples <= target_dims + 1:  # Need at least target_dims + 2 samples
+        # Set target_dims to be safely smaller than n_samples
+        target_dims = max(2, n_samples - 2)
+        
+    if method == "TSNE":
+        # For t-SNE, perplexity must be less than n_samples
+        perplexity = min(30, n_samples - 1)
+        tsne = TSNE(n_components=target_dims, perplexity=perplexity, n_iter=300)
+        return tsne.fit_transform(embeddings)
+    else:  # UMAP
+        # For UMAP, set both n_components and n_neighbors appropriately
+        n_neighbors = min(15, n_samples - 1)
+        
+        try:
+            # First attempt with requested dimensions
+            return umap.UMAP(
+                n_components=target_dims,
+                n_neighbors=n_neighbors,
+                min_dist=0.2
+            ).fit_transform(embeddings)
+        except (ValueError, TypeError) as e:
+            safe_dims = max(2, n_samples // 2 - 1)  # really stupid but a workaround k>=n issue
+            print(f"Warning: Reducing dimensions from {target_dims} to {safe_dims} due to insufficient data")
+            return umap.UMAP(
+                n_components=safe_dims,
+                n_neighbors=n_neighbors,
+                min_dist=0.2
+            ).fit_transform(embeddings)
 
 # TODO: try HDBSCAN for clustering for speed
 # from cuml.cluster import HDBSCAN -- RAPIDS for GPU-accelerated clustering
